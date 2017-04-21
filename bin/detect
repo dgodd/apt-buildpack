@@ -1,0 +1,12 @@
+#!/bin/bash
+set -euo pipefail
+
+BUILD_DIR=$1
+BUILDPACK_DIR=`dirname $(readlink -f ${BASH_SOURCE%/*})`
+
+if [ -f "$BUILD_DIR/Aptfile" ]; then
+  echo "Apt $(cat $BUILDPACK_DIR/VERSION)"
+  exit 0
+else
+  exit 1
+fi

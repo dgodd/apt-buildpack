@@ -1,0 +1,13 @@
+---
+language: apt
+default_versions: []
+dependencies: []
+exclude_files:
+- ".DS_Store"
+- ".envrc"
+- ".git/"
+- ".gitignore"
+- apt_buildpack-*v*.zip
+- scripts
+- src
+pre_package: scripts/build.sh

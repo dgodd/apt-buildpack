@@ -1,0 +1,29 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/Masterminds/semver",
+			"repository": "https://github.com/Masterminds/semver",
+			"vcs": "git",
+			"revision": "abff1900528dbdaf6f3f5aa92c398be1eaf2a9f7",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/cloudfoundry/libbuildpack",
+			"repository": "https://github.com/cloudfoundry/libbuildpack",
+			"vcs": "git",
+			"revision": "678baf1835d3bce31263b9a5feac87378960171d",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "gopkg.in/yaml.v2",
+			"repository": "https://gopkg.in/yaml.v2",
+			"vcs": "git",
+			"revision": "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b",
+			"branch": "v2",
+			"notests": true
+		}
+	]
+}

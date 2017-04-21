@@ -1,0 +1,5 @@
+---
+name: simpletest
+random-route: true
+buildpack: "https://github.com/dgodd/apt-buildpack#develop"
+command: ruby app.rb
