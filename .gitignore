@@ -2,3 +2,5 @@
 /pkg/
 /src/github.com/
 /src/gopkg.in/
+/apt_buildpack-*.zip
+/bin/supply_finalize

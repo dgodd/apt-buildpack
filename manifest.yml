@@ -2,12 +2,14 @@
 language: apt
 default_versions: []
 dependencies: []
-exclude_files:
-- ".DS_Store"
-- ".envrc"
-- ".git/"
-- ".gitignore"
-- apt_buildpack-*v*.zip
-- scripts
-- src
 pre_package: scripts/build.sh
+include_files:
+- README.md
+- VERSION
+- bin/compile
+- bin/detect
+- bin/finalize
+- bin/release
+- bin/supply
+- bin/supply_finalize
+- manifest.yml
