@@ -1,5 +1,4 @@
 #!/bin/bash
 set -euo pipefail
 
-BUILD_DIR=$1
-cat $BUILD_DIR/tmp/apt-buildpack-release-step.yml
+echo -e "---\ndefault_process_types:\n  web: exit 1"
