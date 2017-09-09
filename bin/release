@@ -1,6 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
+set -euo pipefail
 
-cat <<EOF
----
-default_process_types: {}
-EOF
+BUILD_DIR=$1
+cat $BUILD_DIR/tmp/apt-buildpack-release-step.yml
