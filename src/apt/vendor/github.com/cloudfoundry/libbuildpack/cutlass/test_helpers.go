@@ -15,6 +15,7 @@ import (
 type VersionedBuildpackPackage struct {
 	Version string
 	File    string
+	App     *App
 }
 
 func FindRoot() (string, error) {
@@ -61,7 +62,7 @@ func PackageUniquelyVersionedBuildpack() (VersionedBuildpackPackage, error) {
 		return VersionedBuildpackPackage{}, err
 	}
 
-	err = CreateOrUpdateBuildpack(manifest.Language, file)
+	app, err := CreateOrUpdateBuildpack(manifest.Language, file)
 	if err != nil {
 		return VersionedBuildpackPackage{}, err
 	}
@@ -69,6 +70,7 @@ func PackageUniquelyVersionedBuildpack() (VersionedBuildpackPackage, error) {
 	return VersionedBuildpackPackage{
 		Version: buildpackVersion,
 		File:    file,
+		App:     app,
 	}, nil
 }
 

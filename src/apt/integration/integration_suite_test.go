@@ -48,6 +48,12 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 		err = json.Unmarshal(data, &packagedBuildpack)
 		Expect(err).NotTo(HaveOccurred())
 		buildpackVersion = packagedBuildpack.Version
+		if packagedBuildpack.App != nil {
+			cutlass.DefaultBuildpack, err = packagedBuildpack.App.GetUrl("/buildpack.zip")
+			Expect(err).NotTo(HaveOccurred())
+		} else {
+			cutlass.DefaultBuildpack = ""
+		}
 	}
 
 	bpDir, err = cutlass.FindRoot()
@@ -71,6 +77,9 @@ var _ = SynchronizedAfterSuite(func() {
 	// Run on all nodes
 }, func() {
 	// Run once
+	if packagedBuildpack.App != nil {
+		Expect(packagedBuildpack.App.Destroy()).To(Succeed())
+	}
 	cutlass.RemovePackagedBuildpack(packagedBuildpack)
 	Expect(cutlass.DeleteOrphanedRoutes()).To(Succeed())
 })
