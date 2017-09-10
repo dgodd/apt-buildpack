@@ -20,7 +20,6 @@ type Command interface {
 }
 
 type Stager interface {
-	// AddBinDependencyLink(string, string) error
 	BuildDir() string
 	CacheDir() string
 	DepDir() string
@@ -69,20 +68,16 @@ func Run(s *Supplier) error {
 
 func (s *Supplier) InstallApt() error {
 	if err := os.Setenv("APT_CACHE_DIR", s.AptCacheDir); err != nil {
-		s.Log.Error("Error setting env: %s", err.Error())
-		return err
+		return fmt.Errorf("Error setting env: %v", err)
 	}
 	if err := os.MkdirAll(s.AptCacheDir, 0755); err != nil {
-		s.Log.Error("Error creating directory: %s", err.Error())
-		return err
+		return fmt.Errorf("Error creating directory: %v", err)
 	}
 	if err := os.Setenv("APT_STATE_DIR", s.AptStateDir); err != nil {
-		s.Log.Error("Error setting env: %s", err.Error())
-		return err
+		return fmt.Errorf("Error setting env: %v", err)
 	}
 	if err := os.MkdirAll(s.AptStateDir, 0755); err != nil {
-		s.Log.Error("Error creating directory: %s", err.Error())
-		return err
+		return fmt.Errorf("Error creating directory: %v", err)
 	}
 
 	s.Log.BeginStep("Updating apt caches")
@@ -90,13 +85,14 @@ func (s *Supplier) InstallApt() error {
 	if err := s.Command.Execute("", buffer, ioutil.Discard, "apt-get", "-o", "debug::nolocking=true", "-o", "dir::cache="+s.AptCacheDir, "-o", "dir::state="+s.AptStateDir, "update"); err != nil {
 		s.Log.Error("Updating apt cache failed")
 		s.Log.Info(strings.TrimSpace(buffer.String()))
-		return err
+		return fmt.Errorf("Updating apt cache failed: %v", err)
 	}
+
+	panic("hi")
 
 	var aptfile []string
 	if err := libbuildpack.NewYAML().Load(filepath.Join(s.Stager.BuildDir(), "Aptfile"), &aptfile); err != nil {
-		s.Log.Error("Could not read Aptfile: %s", err.Error())
-		return err
+		return fmt.Errorf("Could not read Aptfile: %v", err)
 	}
 
 	for _, pkg := range aptfile {
@@ -105,8 +101,7 @@ func (s *Supplier) InstallApt() error {
 			file := filepath.Join(s.AptCacheDir, "archives", name)
 			s.Log.BeginStep("Fetching " + pkg)
 			if err := s.downloadFile(pkg, file); err != nil {
-				s.Log.Error("Could not download package")
-				return err
+				return fmt.Errorf("Could not download package: %v", err)
 			}
 		} else {
 			s.Log.BeginStep("Fetching .debs for " + pkg)
@@ -121,24 +116,23 @@ func (s *Supplier) InstallApt() error {
 			); err != nil {
 				s.Log.Error("Could not download package")
 				s.Log.Info(strings.TrimSpace(buffer.String()))
-				return err
+				return fmt.Errorf("Could not download package: %v", err)
 			}
 		}
 	}
 
 	dirs, err := ioutil.ReadDir(filepath.Join(s.AptCacheDir, "archives"))
 	if err != nil {
-		s.Log.Error("Could not read archive")
-		return err
+		return fmt.Errorf("Could not read archive: %v", err)
 	}
 	for _, deb := range dirs {
 		if strings.HasSuffix(deb.Name(), ".deb") {
 			s.Log.BeginStep("Installing " + deb.Name())
 			buffer := new(bytes.Buffer)
 			if err := s.Command.Execute(filepath.Join(s.AptCacheDir, "archives"), buffer, buffer, "dpkg", "-x", deb.Name(), s.Stager.DepDir()); err != nil {
-				s.Log.Error("Could not download package: %s", err.Error())
+				s.Log.Error("Could not download package")
 				s.Log.Info(strings.TrimSpace(buffer.String()))
-				return err
+				return fmt.Errorf("Could not download package: %v", err)
 			}
 		}
 	}
@@ -152,13 +146,13 @@ func (s *Supplier) ConfigureFinalizeEnv() error {
 	depDir := "$DEPS_DIR/" + s.Stager.DepsIdx()
 	include_path := fmt.Sprintf("%s/usr/include:$INCLUDE_PATH", depDir)
 	envs := [][]string{
-		[]string{"PATH", fmt.Sprintf("%s/usr/bin:$PATH", depDir)},
-		[]string{"LD_LIBRARY_PATH", fmt.Sprintf("%s/lib/x86_64-linux-gnu/:%s/usr/lib/x86_64-linux-gnu:%s/usr/lib/i386-linux-gnu:%s/usr/lib:$LD_LIBRARY_PATH", depDir, depDir, depDir, depDir)},
-		[]string{"LIBRARY_PATH", fmt.Sprintf("%s/lib/x86_64-linux-gnu/:%s/usr/lib/x86_64-linux-gnu:%s/usr/lib/i386-linux-gnu:%s/usr/lib:$LIBRARY_PATH", depDir, depDir, depDir, depDir)},
-		[]string{"INCLUDE_PATH", include_path},
-		[]string{"CPATH", include_path},
-		[]string{"CPPPATH", include_path},
-		[]string{"PKG_CONFIG_PATH", fmt.Sprintf("%s/usr/lib/x86_64-linux-gnu/pkgconfig:%s/usr/lib/i386-linux-gnu/pkgconfig:%s/usr/lib/pkgconfig:$PKG_CONFIG_PATH", depDir, depDir, depDir)},
+		{"PATH", fmt.Sprintf("%s/usr/bin:$PATH", depDir)},
+		{"LD_LIBRARY_PATH", fmt.Sprintf("%s/lib/x86_64-linux-gnu/:%s/usr/lib/x86_64-linux-gnu:%s/usr/lib/i386-linux-gnu:%s/usr/lib:$LD_LIBRARY_PATH", depDir, depDir, depDir, depDir)},
+		{"LIBRARY_PATH", fmt.Sprintf("%s/lib/x86_64-linux-gnu/:%s/usr/lib/x86_64-linux-gnu:%s/usr/lib/i386-linux-gnu:%s/usr/lib:$LIBRARY_PATH", depDir, depDir, depDir, depDir)},
+		{"INCLUDE_PATH", include_path},
+		{"CPATH", include_path},
+		{"CPPPATH", include_path},
+		{"PKG_CONFIG_PATH", fmt.Sprintf("%s/usr/lib/x86_64-linux-gnu/pkgconfig:%s/usr/lib/i386-linux-gnu/pkgconfig:%s/usr/lib/pkgconfig:$PKG_CONFIG_PATH", depDir, depDir, depDir)},
 	}
 	profileD := ""
 	for _, env := range envs {

@@ -16,8 +16,19 @@
 [[projects]]
   branch = "master"
   name = "github.com/cloudfoundry/libbuildpack"
-  packages = ["."]
+  packages = [".","ansicleaner","cutlass","packager"]
   revision = "71eb05b01f77d0d8cdf801bd5a1a09fe43a5d562"
+
+[[projects]]
+  name = "github.com/elazarl/goproxy"
+  packages = ["."]
+  revision = "aacba83f36a55ac31cbb71c06547a328c0cd1604"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  revision = "18f6dd13ccdd227b8ebc546ca95cd62a02f3970c"
 
 [[projects]]
   branch = "master"
@@ -70,6 +81,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a9afd7f444e09a367c7d56530ebb372ecb61713f5c1c2b4873f61cef9b6ade76"
+  inputs-digest = "265e2edb7db7ee35bf0387a6af9d4206956ddbcd1a8209819c7c018bf1d8ed9c"
   solver-name = "gps-cdcl"
   solver-version = 1

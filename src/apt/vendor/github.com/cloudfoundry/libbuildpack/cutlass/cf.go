@@ -14,11 +14,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cloudfoundry/libbuildpack"
 	"github.com/tidwall/gjson"
 )
 
-var DefaultBuildpack string = ""
 var DefaultMemory string = ""
 var DefaultDisk string = ""
 var Cached bool = false
@@ -55,7 +53,7 @@ func New(fixture string) *App {
 	return &App{
 		Name:      filepath.Base(fixture) + "-" + RandStringRunes(20),
 		Path:      fixture,
-		Buildpack: DefaultBuildpack,
+		Buildpack: "",
 		Memory:    DefaultMemory,
 		appGUID:   "",
 		env:       map[string]string{},
@@ -100,31 +98,11 @@ func DeleteBuildpack(language string) error {
 
 func UpdateBuildpack(language, file string) error {
 	command := exec.Command("cf", "update-buildpack", fmt.Sprintf("%s_buildpack", language), "-p", file, "--enable")
-	if _, err := command.CombinedOutput(); err != nil {
+	if data, err := command.CombinedOutput(); err != nil {
+		fmt.Println(string(data))
 		return err
 	}
 	return nil
-}
-
-func UploadBuildpack(language, file string) (*App, error) {
-	dir, err := ioutil.TempDir("", "buildpack")
-	if err != nil {
-		return nil, err
-	}
-	if err := libbuildpack.CopyFile(file, filepath.Join(dir, "buildpack.zip")); err != nil {
-		return nil, err
-	}
-	if err := ioutil.WriteFile(filepath.Join(dir, "Staticfile"), []byte{}, 0644); err != nil {
-		return nil, err
-	}
-	app := New(dir)
-	app.Name = language + "-" + RandStringRunes(20)
-	app.Buildpack = "staticfile_buildpack"
-	app.Memory = "32M"
-	if err := app.Push(); err != nil {
-		return nil, err
-	}
-	return app, nil
 }
 
 func createBuildpack(language, file string) error {
@@ -135,16 +113,9 @@ func createBuildpack(language, file string) error {
 	return nil
 }
 
-func CreateOrUpdateBuildpack(language, file string) (*App, error) {
-	var err error
-	DefaultBuildpack = ""
-	if err = UpdateBuildpack(language, file); err == nil {
-		return nil, nil
-	}
-	if err = createBuildpack(language, file); err == nil {
-		return nil, nil
-	}
-	return UploadBuildpack(language, file)
+func CreateOrUpdateBuildpack(language, file string) error {
+	createBuildpack(language, file)
+	return UpdateBuildpack(language, file)
 }
 
 func (a *App) ConfirmBuildpack(version string) error {
